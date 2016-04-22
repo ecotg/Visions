@@ -8,6 +8,11 @@ For each category listed on the lefthand banner on the
 http://www.visions.ca/Default.aspx page, this script will extract the
 product details for one product.
 
+Note that some subcategories have no products on that page, so we skip that
+category. Also, on landing on a product page, the breadcrumbs at times changes.
+So subcategory might have been /Home/Audio/Headphones and on the product page,
+we see the breadcrumbs as /Home/Electronics/Headphones.
+
 For each run of the spider, a JSON file and log file are created, containing
 the thirteen scraped products, one per category, and a log for the spider,
 respectively. Each of thirteen categories are listed as a field for their
@@ -69,7 +74,9 @@ class VisionSpider(CrawlSpider):
 		'//*[@id="ctl00_tdMainPanel"]/div/div[@id="ctl00_Content'
 		'PlaceHolder1_pnlNoRecords"]',
 		'//div/span[contains(@class,"productpanel")]/text()[contains'
-		'(.,"Featured Items")]'
+		'(.,"Featured Items")]',
+		'//div[@class="errorMsg"]/text()[contains(.,"no products '
+		'available")]'
 	)
 
 	CRUMB_TRAIL_PATHS = ('//div[@class="breadCrumbs"]/a')
@@ -139,23 +146,8 @@ class VisionSpider(CrawlSpider):
 	)
 
 	def get_breadcrumbs(self, response, return_format='string'):
-		# FIXME: How will return_format be passed in from console ??
-		if return_format.lower() == 'string':
-			crumbs = response.xpath(self.CRUMB_TRAIL_LABEL_PATHS).extract()
-			breadcrumbs = '/'.join([c.strip() for c in crumbs])
-
-		else:
-			# Return a serializable json object
-			breadcrumbs = {}
-
-			for crumb in response.xpath(self.CRUMB_TRAIL_PATHS).extract():
-				href = crumb.xpath('./@href')
-				label = crumb.xpath('./text()')
-
-				if href and label:
-					breadcrumbs[href.strip().replace('.', '')] = label.strip()
-
-				# Add code to figure it out if only one exists
+		crumbs = response.xpath(self.CRUMB_TRAIL_LABEL_PATHS).extract()
+		breadcrumbs = '/'.join([c.strip() for c in crumbs])
 
 		return breadcrumbs
 
@@ -172,8 +164,8 @@ class VisionSpider(CrawlSpider):
 		# Ensure we aren't wasting time extracting from an empty page
 		if extract_helper(response,self.EMPTY_PAGE_CHECK):
 			for d in self.PRODUCT_DETAILS:
-				if '_' not in d.name: # Don't load pric
-					loader.add_value(d.name, 'N/A') # FIXME
+				if '_' not in d.name: # Don't load price
+					loader.add_value(d.name, 'N/A')
 		else:
 			productDetails = detailsRunner(
 				self.PRODUCT_DETAILS, response=response

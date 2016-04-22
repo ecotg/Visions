@@ -1,6 +1,5 @@
 import re
 from collections import namedtuple
-from scrapy import log
 
 PRICE_RE = r'\$?(\d+[\.,]?\d+)' # 12.50 or $1,200
 
@@ -101,8 +100,6 @@ class XGroup:
 
 	    	@return Named tuple of extracted/cleaned data
 		'''
-		# FIXME. Raise exception if no response
-		# Create namedtuple for input/output params
 		self.xgroup = namedtuple(
 			'xgroup', ['name', 'paths', 'process', 'response', 'index']
 		)

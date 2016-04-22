@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-
 # Scrapy settings for Visions project
 from datetime import datetime
 import os
@@ -22,7 +21,3 @@ FEED_FORMAT = 'json'
 FEED_EXPORTERS = {
      'json': 'scrapy.contrib.exporter.JsonItemExporter',
 }
-
-
-# Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'Visions (+http://www.yourdomain.com)'
